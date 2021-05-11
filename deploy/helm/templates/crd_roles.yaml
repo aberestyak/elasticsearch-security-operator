@@ -103,7 +103,6 @@ spec:
                   type: object
                 type: array
             required:
-            - cluster_permissions
             - index_permissions
             - roleMappings
             type: object

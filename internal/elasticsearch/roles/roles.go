@@ -6,7 +6,7 @@ import (
 
 type RoleAPISpec struct {
 	Description       string              `json:"description,omitempty"`
-	ClusterPermissons []string            `json:"cluster_permissions"`
+	ClusterPermissons []string            `json:"cluster_permissions,omitempty"`
 	IndexPermissions  []IndexPermissions  `json:"index_permissions"`
 	TenantPermissions []TenantPermissions `json:"tenant_permissions,omitempty"`
 }

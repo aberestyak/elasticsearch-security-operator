@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: berestyak/elasticsearch-security-operator
-  tag: "0.0.2"
+  tag: "0.0.4"
 
 serviceAccount:
   create: true
