@@ -13,7 +13,7 @@
       "mode": "debug",
       "program": "${workspaceFolder}",
       "env":{
-        "KUBECONFIG": "/home/frost/.kube/config",
+        "KUBECONFIG": "${env:HOME}/.kube/config",
         "LOG_LEVEL": "debug"
       }
     }

@@ -30,3 +30,4 @@ config.yaml
 *.swp
 *.swo
 *~
+__debug_bin
