@@ -24,7 +24,7 @@ rules:
   - security.rshbdev.ru
   resources:
   - alerts/status
-  - role/status
+  - roles/status
   - users/status
   verbs:
   - get
