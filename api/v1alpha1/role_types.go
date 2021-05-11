@@ -22,7 +22,8 @@ import (
 
 // RoleSpec defines the desired state of Role
 type RoleSpec struct {
-	ClusterPermissons []string           `json:"cluster_permissions"`
+	//+optional
+	ClusterPermissons []string           `json:"cluster_permissions,omitempty"`
 	IndexPermissions  []IndexPermissions `json:"index_permissions"`
 	//+optional
 	TenantPermissions []TenantPermissions `json:"tenant_permissions,omitempty"`
