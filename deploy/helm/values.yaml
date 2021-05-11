@@ -1,0 +1,36 @@
+replicaCount: 1
+
+image:
+  repository: berestyak/elasticsearch-security-operator
+  tag: "0.0.2"
+
+serviceAccount:
+  create: true
+  name: "elasticsearch-security-operator"
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+config:
+  endpoint: "https://elastic.example.com"
+  alertAPIPath: "_opendistro/_alerting/monitors"
+  roleAPIPath: "_opendistro/_security/api/roles"
+  userAPIPath: "_opendistro/_security/api/internalusers"
+  roleMappingAPIPath: "_opendistro/_security/api/rolesmapping"
+  username: "admin"
+  password: "admin"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

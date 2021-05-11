@@ -1,0 +1,40 @@
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "elasticsearch-security-operator.fullname" . }}
+  labels:
+    {{- include "elasticsearch-security-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - security.rshbdev.ru
+  resources:
+  - alerts
+  - users
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - security.rshbdev.ru
+  resources:
+  - alerts/status
+  - role/status
+  - users/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - security.rshbdev.ru
+  resources:
+  - roles/finalizers
+  - users/finalizers
+  - alerts/finalizers
+  verbs:
+  - update

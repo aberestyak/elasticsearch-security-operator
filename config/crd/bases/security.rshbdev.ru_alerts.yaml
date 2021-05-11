@@ -1,0 +1,199 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: alerts.security.rshbdev.ru
+spec:
+  group: security.rshbdev.ru
+  names:
+    kind: Alert
+    listKind: AlertList
+    plural: alerts
+    singular: alert
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.enabled
+      name: Enabled
+      type: boolean
+    - jsonPath: .status.monitor.state
+      name: Status
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Alert is the Schema for the alerts API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AlertSpec defines the desired state of Alert
+            properties:
+              enabled:
+                type: boolean
+              inputs:
+                items:
+                  properties:
+                    search:
+                      properties:
+                        indices:
+                          items:
+                            type: string
+                          type: array
+                        query:
+                          type: string
+                      required:
+                      - indices
+                      - query
+                      type: object
+                  required:
+                  - search
+                  type: object
+                type: array
+              name:
+                type: string
+              schedule:
+                properties:
+                  period:
+                    properties:
+                      interval:
+                        type: integer
+                      unit:
+                        enum:
+                        - HOURS
+                        - MINUTES
+                        - DAYS
+                        type: string
+                    required:
+                    - interval
+                    - unit
+                    type: object
+                required:
+                - period
+                type: object
+              triggers:
+                items:
+                  properties:
+                    actions:
+                      items:
+                        properties:
+                          destination_id:
+                            type: string
+                          message_template:
+                            properties:
+                              lang:
+                                enum:
+                                - mustache
+                                - painless
+                                type: string
+                              source:
+                                type: string
+                            required:
+                            - lang
+                            - source
+                            type: object
+                          name:
+                            type: string
+                          subject_template:
+                            properties:
+                              lang:
+                                enum:
+                                - mustache
+                                - painless
+                                type: string
+                              source:
+                                type: string
+                            required:
+                            - lang
+                            - source
+                            type: object
+                        required:
+                        - message_template
+                        - name
+                        - subject_template
+                        type: object
+                      type: array
+                    condition:
+                      properties:
+                        script:
+                          properties:
+                            lang:
+                              enum:
+                              - painless
+                              type: string
+                            source:
+                              type: string
+                          required:
+                          - lang
+                          - source
+                          type: object
+                      required:
+                      - script
+                      type: object
+                    name:
+                      type: string
+                    severity:
+                      type: string
+                  required:
+                  - actions
+                  - condition
+                  - name
+                  - severity
+                  type: object
+                type: array
+              type:
+                type: string
+            required:
+            - enabled
+            - inputs
+            - name
+            - schedule
+            - triggers
+            - type
+            type: object
+          status:
+            description: AlertStatus defines the observed state of Alert
+            properties:
+              monitor:
+                properties:
+                  error:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  state:
+                    type: string
+                required:
+                - id
+                - name
+                - state
+                type: object
+            required:
+            - monitor
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

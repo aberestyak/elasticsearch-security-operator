@@ -1,0 +1,36 @@
+domain: rshbdev.ru
+layout: go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: elasticsearch-security-operator
+repo: github.com/aberestyak/elasticsearch-security-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: rshbdev.ru
+  group: security
+  kind: Alert
+  path: github.com/aberestyak/elasticsearch-security-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: rshbdev.ru
+  group: security
+  kind: Role
+  path: github.com/aberestyak/elasticsearch-security-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: rshbdev.ru
+  group: security
+  kind: User
+  path: github.com/aberestyak/elasticsearch-security-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"

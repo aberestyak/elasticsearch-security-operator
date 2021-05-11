@@ -1,0 +1,130 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: roles.security.rshbdev.ru
+spec:
+  group: security.rshbdev.ru
+  names:
+    kind: Role
+    listKind: RoleList
+    plural: roles
+    singular: role
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: Status
+      type: string
+    - jsonPath: .spec.roleMappings.backend_roles
+      name: Role mappings
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Role is the Schema for the roles API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: RoleSpec defines the desired state of Role
+            properties:
+              cluster_permissions:
+                items:
+                  type: string
+                type: array
+              index_permissions:
+                items:
+                  properties:
+                    allowed_actions:
+                      items:
+                        type: string
+                      type: array
+                    dls:
+                      type: string
+                    fls:
+                      items:
+                        type: string
+                      type: array
+                    index_patterns:
+                      items:
+                        type: string
+                      type: array
+                    masked_fields:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - allowed_actions
+                  - index_patterns
+                  type: object
+                type: array
+              roleMappings:
+                properties:
+                  backend_roles:
+                    items:
+                      type: string
+                    type: array
+                  users:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - backend_roles
+                type: object
+              tenant_permissions:
+                items:
+                  properties:
+                    allowed_actions:
+                      items:
+                        type: string
+                      type: array
+                    tenant_patterns:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - allowed_actions
+                  - tenant_patterns
+                  type: object
+                type: array
+            required:
+            - cluster_permissions
+            - index_permissions
+            - roleMappings
+            type: object
+          status:
+            description: RoleStatus defines the observed state of Role
+            properties:
+              error:
+                type: string
+              state:
+                type: string
+            required:
+            - state
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

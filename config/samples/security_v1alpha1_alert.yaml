@@ -1,0 +1,67 @@
+apiVersion: security.rshbdev.ru/v1alpha1
+kind: Alert
+metadata:
+  name: alert-sample
+spec:
+  name: es-security-test
+  type: monitor
+  enabled: true
+  schedule:
+    period:
+      interval: 1
+      unit: "MINUTES"
+  inputs:
+  - search:
+      query: |
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "range": {
+                    "@timestamp": {
+                      "from": "{{period_end}}||-10m",
+                      "to": "{{period_end}}",
+                      "include_lower": true,
+                      "include_upper": true,
+                      "format": "epoch_millis",
+                      "boost": 1.0
+                    }
+                  }
+                },
+                {
+                  "match_phrase": {
+                    "parsed.webservice.severity": {
+                      "query": "ERROR",
+                      "slop": 1,
+                      "zero_terms_query": "NONE",
+                      "boost": 1.0
+                    }
+                  }
+                }
+              ],
+              "adjust_pure_negative": true,
+              "boost": 1.0
+            }
+          },
+          "aggregations": {}
+        }
+      indices:
+      - "business-*"
+  triggers:
+  - name: test
+    severity: "2"
+    condition:
+      script:
+        source: "ctx.results[0].hits.total.value > 10000"
+        lang: "painless"
+    actions:
+    - name: test-action
+      destination_id: v2naGngB3sXoeAVED5Re
+      subject_template:
+        source: ""
+        lang: "mustache"
+      message_template:
+        source: "asdasdasdasdasdasdasd"
+        lang: "mustache"

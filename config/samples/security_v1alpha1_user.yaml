@@ -1,0 +1,6 @@
+apiVersion: security.rshbdev.ru/v1alpha1
+kind: User
+metadata:
+  name: user-sample-test
+spec:
+  hash: "1asda23123123"
