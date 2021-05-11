@@ -1,6 +1,5 @@
 # Elasticsearch-security
 
-## About
 This operator provides full lifecycle of Elasticsearch users,roles,rolemapping and alerts.
 
 Mount config file to `/config.yaml` with following parameters:
@@ -10,8 +9,8 @@ Mount config file to `/config.yaml` with following parameters:
 | `endpoint`           | Elasticsearch endpoint                                                             |
 | `alertAPIPath`       | Path to alerts api endpoint (for example `_opendistro/_alerting/monitors`)         |
 | `roleAPIPath`        | Path to roles api endpoint (for example `_opendistro/_security/api/roles`)         |
-| `usersAPIPath`       | Path to users api endpoint (for example `_opendistro/_security/api/users`)         |
-| `roleMappingAPIPath` | Path to role mappings api endpoint (for example `_opendistro/_security/api/users`) |
+| `usersAPIPath`       | Path to users api endpoint (for example `_opendistro/_security/api/internalusers`)         |
+| `roleMappingAPIPath` | Path to role mappings api endpoint (for example `_opendistro/_security/api/rolesmapping`) |
 | `username`           | User with appropriate permissions                                                  |
 | `password`           | User password                                                                      |
 
