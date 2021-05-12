@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: berestyak/elasticsearch-security-operator
-  tag: "0.0.4"
+  tag: "0.1.0"
 
 serviceAccount:
   create: true
@@ -20,14 +20,47 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+env:
+  - name: LOG_LEVEL
+    value: "info"
+## Configurate operator with environment variables
+  # - name: ELASTICSEARCH_ENDPOINT
+  #   value: "https://example.com"
+  # - name: ELASTICSEARCH_USERNAME
+  #   value: "admin"
+  # - name: ELASTICSEARCH_PASSWORD
+  #   value: "admin"
+  # - name: ELASTICSEARCH_ALERT_API_PATH
+  #   value: "_opendistro/_alerting/monitors"
+  # - name: ELASTICSEARCH_ROLE_API_PATH
+  #   value: "_opendistro/_security/api/roles"
+  # - name: ELASTICSEARCH_USER_API_PATH
+  #   value: "_opendistro/_security/api/internalusers"
+  # - name: EXTRA_CA_CERT_FILE
+  #   value: "/usr/share/cacert/CA.pem"
+  # - name: ELASTICSEARCH_ROLEMAPPING_API_PATH
+  #   value: "_opendistro/_security/api/rolesmapping"
+
+## Configurate operator with file from secret
 config:
   endpoint: "https://elastic.example.com"
   alertAPIPath: "_opendistro/_alerting/monitors"
   roleAPIPath: "_opendistro/_security/api/roles"
   userAPIPath: "_opendistro/_security/api/internalusers"
   roleMappingAPIPath: "_opendistro/_security/api/rolesmapping"
+  # extraCACertFile: "/usr/share/cacert/CA.pem"
   username: "admin"
   password: "admin"
+
+## Use extra volumes to mount custom CA certificates
+extraVolumes: {}
+  # - name: cacert
+  #   secret:
+  #     secretName: ca-bundle
+
+extraVolumeMounts: {}
+  # - name: cacert
+  #   mountPath: /usr/share/cacert
 
 nodeSelector: {}
 

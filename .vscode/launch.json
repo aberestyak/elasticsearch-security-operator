@@ -4,8 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-
     {
       "name": "Launch Package",
       "type": "go",
@@ -14,7 +12,14 @@
       "program": "${workspaceFolder}",
       "env":{
         "KUBECONFIG": "${env:HOME}/.kube/config",
-        "LOG_LEVEL": "debug"
+        "LOG_LEVEL": "debug",
+        "ELASTICSEARCH_ENDPOINT": "https://example.com",
+        "ELASTICSEARCH_USERNAME": "admin",
+        "ELASTICSEARCH_PASSWORD": "admin",
+        "ELASTICSEARCH_ALERT_API_PATH": "_opendistro/_alerting/monitors",
+        "ELASTICSEARCH_ROLE_API_PATH": "_opendistro/_security/api/roles",
+        "ELASTICSEARCH_USER_API_PATH": "_opendistro/_security/api/internalusers",
+        "ELASTICSEARCH_ROLEMAPPING_API_PATH": "_opendistro/_security/api/rolesmapping"
       }
     }
   ]

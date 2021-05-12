@@ -2,12 +2,14 @@ package elasticsearch_api_client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
 
+	appConfig "github.com/aberestyak/elasticsearch-security-operator/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -132,10 +134,24 @@ func (c *APIClient) PrepareRequest(
 	for header, value := range c.Cfg.DefaultHeader {
 		localVarRequest.Header.Add(header, value)
 	}
+	// Add custom CA certificate if appropriate env is set
+	if appConfig.AppConfig.ExtraCACert != nil {
+		c.addCustomCACert()
+	}
 	return localVarRequest, nil
 }
 
 func basicAuth(username, password string) string {
 	auth := username + ":" + password
 	return base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
+func (c *APIClient) addCustomCACert() {
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		RootCAs: appConfig.AppConfig.ExtraCACert,
+	}
+	tlsConfig.BuildNameToCertificate()
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	c.Cfg.HTTPClient = &http.Client{Transport: transport}
 }

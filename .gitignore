@@ -24,3 +24,4 @@ testbin/*
 *.swo
 *~
 config.yaml
+CA.pem

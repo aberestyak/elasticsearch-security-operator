@@ -1,7 +1,6 @@
 # Build the manager binary
 FROM golang:1.16.3-alpine3.13 as build
-ARG ARTIFACT_VERSION=0.0.1
-
+ARG ARTIFACT_VERSION
 WORKDIR /go/src/elasticsearch-security-operator/
 COPY . .
 
