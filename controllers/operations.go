@@ -11,23 +11,28 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var defaultRequest = elasticsearch_api_client.APIClient{
-	Cfg: &elasticsearch_api_client.Configuration{
-		Host:      config.AppConfig.ElasticsearchEndpoint,
-		UserAgent: "elasticsearch-security-operator-client/go",
-		BasicAuth: elasticsearch_api_client.BasicAuth{
-			UserName: config.AppConfig.ElasticsearchUsername,
-			Password: config.AppConfig.ElasticsearchPassword,
+var (
+	defaultRequest = elasticsearch_api_client.APIClient{
+		Cfg: &elasticsearch_api_client.Configuration{
+			Host:      config.AppConfig.ElasticsearchEndpoint,
+			UserAgent: "elasticsearch-security-operator-client/go",
+			BasicAuth: elasticsearch_api_client.BasicAuth{
+				UserName: config.AppConfig.ElasticsearchUsername,
+				Password: config.AppConfig.ElasticsearchPassword,
+			},
+			HTTPClient: &http.Client{},
 		},
-		HTTPClient: &http.Client{},
-	},
-}
+	}
+	apiClientWrapperLogger = log.WithFields(log.Fields{
+		"component": "apiClientWrapper",
+	})
+)
 
 // MakeAPIRequest - make request to endpoint
 func MakeAPIRequest(method string, path string, jsonBody []byte) (ObjectID string, Status string, ResponseBody []byte, Error error) {
 	responseBody, httpResponse, err := defaultRequest.PrepareAndCall(path, method, jsonBody, nil, url.Values{})
 	if err != nil {
-		log.Errorf("Error when creating new alert: %v", err.Error())
+		apiClientWrapperLogger.Errorf("Error when creating new object: %v", err.Error())
 		return "", "", nil, err
 	}
 	RequesDebugtLogger := log.WithFields(log.Fields{
@@ -41,15 +46,16 @@ func MakeAPIRequest(method string, path string, jsonBody []byte) (ObjectID strin
 func GetResponseStatus(response *http.Response) string {
 	if (response.StatusCode < 300) && (response.StatusCode >= 200) {
 		return "Deployed"
-	} else {
-		return "Error"
 	}
+	return "Error"
 }
 
 // GetResponseObjectID - get object ID, if exists
 func GetResponseObjectID(responseBody []byte) string {
 	var result map[string]string
-	json.Unmarshal(responseBody, &result)
+	if err := json.Unmarshal(responseBody, &result); err != nil {
+		apiClientWrapperLogger.Debugf("Error when unmarshaling http response body: %v", err)
+	}
 	return result["_id"]
 }
 

@@ -37,6 +37,7 @@ type AlertSpec struct {
 	Triggers []MonitorTrigger `json:"triggers"`
 }
 
+// MonitorTrigger defines triggers and required actions
 type MonitorTrigger struct {
 	Name      string           `json:"name"`
 	Severity  string           `json:"severity"`
@@ -44,6 +45,7 @@ type MonitorTrigger struct {
 	Actions   []TriggerAction  `json:"actions"`
 }
 
+// TriggerAction defines alerting destination and templates
 type TriggerAction struct {
 	Name string `json:"name"`
 	//+optional
@@ -57,6 +59,7 @@ type TriggerAction struct {
 	//Throttle TriggerThrottle `json:"throttle,omitempty"`
 }
 
+// TriggerThrottle defines alerting throttle
 type TriggerThrottle struct {
 	//+kubebuilder:default:=1
 	Value int `json:"value"`
@@ -65,36 +68,43 @@ type TriggerThrottle struct {
 	Unit string `json:"unit"`
 }
 
+// TextTemplate defines alert text template
 type TextTemplate struct {
 	Source string `json:"source"`
 	//+kubebuilder:validation:Enum=mustache;painless
 	Lang string `json:"lang"`
 }
 
+// TriggerCondition defines condition to trigger alert
 type TriggerCondition struct {
 	Script ConditionScript `json:"script"`
 }
 
+// ConditionScript defines language and script to execute
 type ConditionScript struct {
 	Source string `json:"source"`
 	//+kubebuilder:validation:Enum=painless
 	Lang string `json:"lang"`
 }
 
+// MonitorInput defines search queries
 type MonitorInput struct {
 	Search InputSearch `json:"search"`
 }
 
+// InputSearch defines search queries and indices
 type InputSearch struct {
 	Indices []string `json:"indices"`
 	Query   string   `json:"query"`
 }
 
+// MonitorSchedule defines schedule period
 type MonitorSchedule struct {
 	Period SchedulePeroid `json:"period"`
 	// TODO: add other schedule types
 }
 
+// SchedulePeroid defines schedule time period
 type SchedulePeroid struct {
 	Interval int `json:"interval"`
 	//+kubebuilder:validation:Enum=HOURS;MINUTES;DAYS
@@ -105,6 +115,8 @@ type SchedulePeroid struct {
 type AlertStatus struct {
 	Monitor StatusMonitor `json:"monitor"`
 }
+
+// StatusMonitor defines alert's status
 type StatusMonitor struct {
 	Name   string `json:"name"`
 	ID     string `json:"id"`

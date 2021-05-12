@@ -13,6 +13,7 @@ const (
 	defaultLogFormat = "nested"
 )
 
+// Init initialize logger
 func Init() {
 	logLevelValue := os.Getenv("LOG_LEVEL")
 	logLevel, err := log.ParseLevel(logLevelValue)

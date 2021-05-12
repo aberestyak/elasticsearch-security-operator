@@ -30,12 +30,14 @@ type RoleSpec struct {
 	RoleMappings      RoleMappings        `json:"roleMappings"`
 }
 
+// RoleMappings defines mapping between role and backed role/internal users
 type RoleMappings struct {
 	BackendRoles []string `json:"backend_roles"`
 	//+optional
 	Users []string `json:"users,omitempty"`
 }
 
+// IndexPermissions defines permissions to specified indices
 type IndexPermissions struct {
 	IndexPatterns []string `json:"index_patterns"`
 	//+optional
@@ -47,6 +49,7 @@ type IndexPermissions struct {
 	AllowedActions []string `json:"allowed_actions"`
 }
 
+// TenantPermissions defines permissions to specified tenants
 type TenantPermissions struct {
 	TenantPatterns []string `json:"tenant_patterns"`
 	AllowedActions []string `json:"allowed_actions"`
@@ -63,6 +66,7 @@ type RoleStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
 //+kubebuilder:printcolumn:name="Role mappings",type=string,JSONPath=`.spec.roleMappings.backend_roles`
+
 // Role is the Schema for the roles API
 type Role struct {
 	metav1.TypeMeta   `json:",inline"`

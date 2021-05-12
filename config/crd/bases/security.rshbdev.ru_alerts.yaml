@@ -47,8 +47,10 @@ spec:
                 type: boolean
               inputs:
                 items:
+                  description: MonitorInput defines search queries
                   properties:
                     search:
+                      description: InputSearch defines search queries and indices
                       properties:
                         indices:
                           items:
@@ -67,8 +69,10 @@ spec:
               name:
                 type: string
               schedule:
+                description: MonitorSchedule defines schedule period
                 properties:
                   period:
+                    description: SchedulePeroid defines schedule time period
                     properties:
                       interval:
                         type: integer
@@ -87,13 +91,17 @@ spec:
                 type: object
               triggers:
                 items:
+                  description: MonitorTrigger defines triggers and required actions
                   properties:
                     actions:
                       items:
+                        description: TriggerAction defines alerting destination and
+                          templates
                         properties:
                           destination_id:
                             type: string
                           message_template:
+                            description: TextTemplate defines alert text template
                             properties:
                               lang:
                                 enum:
@@ -109,6 +117,7 @@ spec:
                           name:
                             type: string
                           subject_template:
+                            description: TextTemplate defines alert text template
                             properties:
                               lang:
                                 enum:
@@ -128,8 +137,11 @@ spec:
                         type: object
                       type: array
                     condition:
+                      description: TriggerCondition defines condition to trigger alert
                       properties:
                         script:
+                          description: ConditionScript defines language and script
+                            to execute
                           properties:
                             lang:
                               enum:
@@ -169,6 +181,7 @@ spec:
             description: AlertStatus defines the observed state of Alert
             properties:
               monitor:
+                description: StatusMonitor defines alert's status
                 properties:
                   error:
                     type: string

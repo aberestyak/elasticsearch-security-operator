@@ -51,6 +51,7 @@ const userFinalizer = "user.security.rshbdev.ru/finalizer"
 //+kubebuilder:rbac:groups=security.rshbdev.ru,resources=users/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=security.rshbdev.ru,resources=users/finalizers,verbs=update
 
+// Reconcile main reconcile loop
 func (r *UserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	desiredUser := &securityv1alpha1.User{}
 	var err = r.Get(ctx, req.NamespacedName, desiredUser)
@@ -90,14 +91,14 @@ func (r *UserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	if err != nil {
 		roleControllerLogger.Errorf("Error when mapping models : %v", err)
 	}
-	apiUserJson, err := json.Marshal(userAPIObject)
+	apiUserJSON, err := json.Marshal(userAPIObject)
 	if err != nil {
 		roleControllerLogger.Errorf("Error when marshaling user object: %v", err)
 		return ctrl.Result{}, err
 	}
 
 	// Can't get hash from elasticsearch, so can't check changed or not
-	if err := CreateOrUpdateUser(r, desiredUser, apiUserJson); err != nil {
+	if err := CreateOrUpdateUser(r, desiredUser, apiUserJSON); err != nil {
 		return ctrl.Result{}, err
 	}
 	return ctrl.Result{}, nil
@@ -105,7 +106,7 @@ func (r *UserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 // CreateOrUpdateUser - make PUT request to create or update User
 func CreateOrUpdateUser(r *UserReconciler, user *securityv1alpha1.User, jsonUser []byte) error {
-	_, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchUserApiPath+"/"+user.Name, jsonUser)
+	_, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchUserAPIPath+"/"+user.Name, jsonUser)
 	if err != nil {
 		return errors.New("Error when creating new user: " + err.Error())
 	}
@@ -123,9 +124,8 @@ func SetUserStatus(r *UserReconciler, user *securityv1alpha1.User, responseResul
 		Error: func(response string, responseBody []byte) string {
 			if response == "Error" {
 				return string(responseBody)
-			} else {
-				return ""
 			}
+			return ""
 		}(responseResult, responseBody),
 	}
 	if err := r.Client.Status().Update(context.TODO(), user); err != nil {
@@ -134,7 +134,7 @@ func SetUserStatus(r *UserReconciler, user *securityv1alpha1.User, responseResul
 	return nil
 }
 
-// MapuserAPIObject - map CRD model to API
+// MapUserAPIObject - map CRD model to API
 func MapUserAPIObject(user *securityv1alpha1.User) (*users.UserAPISpec, error) {
 	var userAPI users.UserAPISpec
 	buf, _ := json.Marshal(user.Spec)
@@ -151,9 +151,10 @@ func (r *UserReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// FinalizeUser delete user
 func (r *UserReconciler) FinalizeUser(user *securityv1alpha1.User) error {
 	jsonUser, _ := json.Marshal(user.Spec)
-	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchUserApiPath+"/"+user.Name, jsonUser)
+	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchUserAPIPath+"/"+user.Name, jsonUser)
 	if err != nil {
 		userControllerLogger.Errorf("Error when finalyzing user: %v", err.Error())
 		return err

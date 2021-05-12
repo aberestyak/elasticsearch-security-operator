@@ -4,18 +4,20 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
 )
 
+// Config structure with operator's config
 type Config struct {
 	ElasticsearchEndpoint           string         `mapstructure:"endpoint"`
-	ElasticsearchAlertApiPath       string         `mapstructure:"alertAPIPath"`
-	ElasticsearchRoleApiPath        string         `mapstructure:"roleAPIPath"`
-	ElasticsearchUserApiPath        string         `mapstructure:"userAPIPath"`
-	ElasticsearchRoleMappingApiPath string         `mapstructure:"roleMappingAPIPath"`
+	ElasticsearchAlertAPIPath       string         `mapstructure:"alertAPIPath"`
+	ElasticsearchRoleAPIPath        string         `mapstructure:"roleAPIPath"`
+	ElasticsearchUserAPIPath        string         `mapstructure:"userAPIPath"`
+	ElasticsearchRoleMappingAPIPath string         `mapstructure:"roleMappingAPIPath"`
 	ElasticsearchUsername           string         `mapstructure:"username"`
 	ExtraCACertFile                 string         `mapstructure:"extraCACertFile"`
 	ExtraCACert                     *x509.CertPool `mapstructure:"extraCACert"`
@@ -25,16 +27,17 @@ type Config struct {
 const (
 	devConfigFile                   = "./config.yaml"
 	elasticsearchEndpoint           = "ELASTICSEARCH_ENDPOINT"
-	elasticsearchAlertApiPath       = "ELASTICSEARCH_ALERT_API_PATH"
-	elasticsearchRoleApiPath        = "ELASTICSEARCH_ROLE_API_PATH"
-	elasticsearchUserApiPath        = "ELASTICSEARCH_USER_API_PATH"
-	elasticsearchRoleMappingApiPath = "ELASTICSEARCH_ROLEMAPPING_API_PATH"
+	elasticsearchAlertAPIPath       = "ELASTICSEARCH_ALERT_API_PATH"
+	elasticsearchRoleAPIPath        = "ELASTICSEARCH_ROLE_API_PATH"
+	elasticsearchUserAPIPath        = "ELASTICSEARCH_USER_API_PATH"
+	elasticsearchRoleMappingAPIPath = "ELASTICSEARCH_ROLEMAPPING_API_PATH"
 	extraCACertFile                 = "EXTRA_CA_CERT_FILE"
 	elasticsearchUsername           = "ELASTICSEARCH_USERNAME"
 	elasticsearchPassword           = "ELASTICSEARCH_PASSWORD"
 )
 
 var (
+	// AppConfig object with applied config
 	AppConfig    = loadConfig()
 	configLogger = log.WithFields(log.Fields{
 		"component": "ConfigInit",
@@ -47,17 +50,17 @@ func loadConfig() *Config {
 
 	if _, err := os.Stat(devConfigFile); os.IsNotExist(err) {
 		log.Println("Load configuration from environment variables")
-		viper.SetDefault(elasticsearchAlertApiPath, "_opendistro/_alerting/monitors")
-		viper.SetDefault(elasticsearchRoleApiPath, "_opendistro/_security/api/roles")
-		viper.SetDefault(elasticsearchUserApiPath, "_opendistro/_security/api/internalusers")
-		viper.SetDefault(elasticsearchRoleMappingApiPath, "_opendistro/_security/api/rolesmapping")
+		viper.SetDefault(elasticsearchAlertAPIPath, "_opendistro/_alerting/monitors")
+		viper.SetDefault(elasticsearchRoleAPIPath, "_opendistro/_security/api/roles")
+		viper.SetDefault(elasticsearchUserAPIPath, "_opendistro/_security/api/internalusers")
+		viper.SetDefault(elasticsearchRoleMappingAPIPath, "_opendistro/_security/api/rolesmapping")
 		viper.SetDefault(extraCACertFile, "")
 
 		conf.ElasticsearchEndpoint = viper.GetString(elasticsearchEndpoint)
-		conf.ElasticsearchAlertApiPath = viper.GetString(elasticsearchAlertApiPath)
-		conf.ElasticsearchRoleApiPath = viper.GetString(elasticsearchRoleApiPath)
-		conf.ElasticsearchUserApiPath = viper.GetString(elasticsearchUserApiPath)
-		conf.ElasticsearchRoleMappingApiPath = viper.GetString(elasticsearchRoleMappingApiPath)
+		conf.ElasticsearchAlertAPIPath = viper.GetString(elasticsearchAlertAPIPath)
+		conf.ElasticsearchRoleAPIPath = viper.GetString(elasticsearchRoleAPIPath)
+		conf.ElasticsearchUserAPIPath = viper.GetString(elasticsearchUserAPIPath)
+		conf.ElasticsearchRoleMappingAPIPath = viper.GetString(elasticsearchRoleMappingAPIPath)
 		conf.ExtraCACertFile = viper.GetString(extraCACertFile)
 		conf.ElasticsearchUsername = viper.GetString(elasticsearchUsername)
 		conf.ElasticsearchPassword = viper.GetString(elasticsearchPassword)
@@ -79,7 +82,7 @@ func loadConfig() *Config {
 }
 
 func appendCACert(file string) *x509.CertPool {
-	caCert, err := ioutil.ReadFile(file)
+	caCert, err := ioutil.ReadFile(filepath.Clean(file))
 	if err != nil {
 		configLogger.Fatalf("Unable to read file with custom CA certificates: %v", err)
 	}

@@ -52,6 +52,7 @@ type RoleReconciler struct {
 //+kubebuilder:rbac:groups=security.rshbdev.ru,resources=roles/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=security.rshbdev.ru,resources=roles/finalizers,verbs=update
 
+// Reconcile main reconcile loop
 func (r *RoleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	desiredRole := &securityv1alpha1.Role{}
 	var err = r.Get(ctx, req.NamespacedName, desiredRole)
@@ -94,19 +95,19 @@ func (r *RoleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
-	apiRoleJson, err := json.Marshal(roleAPIObject)
+	apiRoleJSON, err := json.Marshal(roleAPIObject)
 	if err != nil {
 		roleControllerLogger.Errorf("Error when marshaling role object: %v", err)
 		return ctrl.Result{}, err
 	}
-	roleExists, existingRoleSpec, err := GetExistingObject(config.AppConfig.ElasticsearchRoleApiPath, desiredRole.Name)
+	roleExists, existingRoleSpec, err := GetExistingObject(config.AppConfig.ElasticsearchRoleAPIPath, desiredRole.Name)
 	if err != nil {
 		roleControllerLogger.Errorf("Error when checking role existence: %v", err.Error())
 		return ctrl.Result{}, err
 	}
 	if !roleExists {
 		// Create
-		if err := CreateOrUpdateRole(r, desiredRole, apiRoleJson); err != nil {
+		if err := CreateOrUpdateRole(r, desiredRole, apiRoleJSON); err != nil {
 			roleControllerLogger.Errorf("Error when creating new role: %v", err.Error())
 		}
 		roleControllerLogger.Infof("Created new role: %v. Status: %v", desiredRole.Name, desiredRole.Status.Status)
@@ -114,23 +115,28 @@ func (r *RoleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		// Update
 		// Trying to get existing role
 		existingRole := make(map[string]roles.RoleAPISpec, 1)
-		json.Unmarshal(existingRoleSpec, &existingRole)
+		if err := json.Unmarshal(existingRoleSpec, &existingRole); err != nil {
+			roleControllerLogger.Errorf("Error when unmarshaling existing role: %v", err.Error())
+			return ctrl.Result{}, err
+		}
 		// Compare existing and desired role spec
 		if !reflect.DeepEqual(existingRole[desiredRole.Name], roleAPIObject) {
-			if err := CreateOrUpdateRole(r, desiredRole, apiRoleJson); err != nil {
+			if err := CreateOrUpdateRole(r, desiredRole, apiRoleJSON); err != nil {
 				roleControllerLogger.Errorf("Error when updating role: %v", err.Error())
 			}
 			roleControllerLogger.Infof("Updated role: %v. Status: %v", desiredRole.Name, desiredRole.Status.Status)
 		}
 		// Create or update roleMapping, no matter is this create or update operation and update role status
 		if err := MakeRoleMapping(desiredRole); err != nil {
-			SetRoleStatus(r, desiredRole, "Error", []byte(err.Error()))
+			if err := SetRoleStatus(r, desiredRole, "Error", []byte(err.Error())); err != nil {
+				roleControllerLogger.Errorf("Error when setting role status: %v", err.Error())
+			}
 		}
 	}
 	return ctrl.Result{}, nil
 }
 
-// MaproleAPIObject - map CRD model to API
+// MapRoleAPIObject - map CRD model to API
 func MapRoleAPIObject(role *securityv1alpha1.Role) (*roles.RoleAPISpec, error) {
 	var roleAPI roles.RoleAPISpec
 	buf, _ := json.Marshal(role.Spec)
@@ -147,9 +153,8 @@ func SetRoleStatus(r *RoleReconciler, role *securityv1alpha1.Role, responseResul
 		Error: func(response string, responseBody []byte) string {
 			if response == "Error" {
 				return string(responseBody)
-			} else {
-				return ""
 			}
+			return ""
 		}(responseResult, responseBody),
 	}
 	if err := r.Client.Status().Update(context.TODO(), role); err != nil {
@@ -160,7 +165,7 @@ func SetRoleStatus(r *RoleReconciler, role *securityv1alpha1.Role, responseResul
 
 // CreateOrUpdateRole - make PUT request to create or update Role
 func CreateOrUpdateRole(r *RoleReconciler, role *securityv1alpha1.Role, jsonRole []byte) error {
-	_, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchRoleApiPath+"/"+role.Name, jsonRole)
+	_, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchRoleAPIPath+"/"+role.Name, jsonRole)
 	if err != nil {
 		return errors.New("Error when creating new role: " + err.Error())
 	}
@@ -178,9 +183,10 @@ func (r *RoleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// FinalizeRole delete role
 func (r *RoleReconciler) FinalizeRole(role *securityv1alpha1.Role) error {
 	jsonRole, _ := json.Marshal(role.Spec)
-	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchRoleApiPath+"/"+role.Name, jsonRole)
+	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchRoleAPIPath+"/"+role.Name, jsonRole)
 	if err != nil {
 		roleControllerLogger.Errorf("Error when finalyzing role: %v", err.Error())
 		return err

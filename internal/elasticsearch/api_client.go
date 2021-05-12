@@ -1,4 +1,4 @@
-package elasticsearch_api_client
+package esapiclient
 
 import (
 	"bytes"
@@ -7,16 +7,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"regexp"
 
 	appConfig "github.com/aberestyak/elasticsearch-security-operator/config"
 	log "github.com/sirupsen/logrus"
 )
 
+// APIClient defines elasticsearch API client config
 type APIClient struct {
 	Cfg *Configuration
 }
 
+// Configuration defines http client config
 type Configuration struct {
 	Host          string            `json:"host,omitempty"`
 	DefaultHeader map[string]string `json:"defaultHeader,omitempty"`
@@ -25,24 +26,24 @@ type Configuration struct {
 	HTTPClient    *http.Client
 }
 
+// BasicAuth defins basic auth configuration for http client
 type BasicAuth struct {
 	UserName string `json:"userName,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 
 var (
-	jsonCheck       = regexp.MustCompile("(?i:(?:application|text)/json)")
 	apiClientLogger = log.WithFields(log.Fields{
 		"component": "ApiClient",
 	})
 )
 
-func (c *APIClient) CallAPI(request *http.Request) (*http.Response, error) {
+func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 	return c.Cfg.HTTPClient.Do(request)
 }
 
-func (c *APIClient) DoApiRequest(request *http.Request) ([]byte, *http.Response, error) {
-	httpResponse, err := c.CallAPI(request)
+func (c *APIClient) doAPIRequest(request *http.Request) ([]byte, *http.Response, error) {
+	httpResponse, err := c.callAPI(request)
 	if err != nil || httpResponse == nil {
 		apiClientLogger.Error(err)
 		return nil, httpResponse, err
@@ -56,6 +57,7 @@ func (c *APIClient) DoApiRequest(request *http.Request) ([]byte, *http.Response,
 	return responseBody, httpResponse, err
 }
 
+// PrepareAndCall prepare http request and do it
 func (c *APIClient) PrepareAndCall(
 	path string,
 	method string,
@@ -63,15 +65,15 @@ func (c *APIClient) PrepareAndCall(
 	headerParams map[string]string,
 	queryParams url.Values) ([]byte, *http.Response, error) {
 
-	r, err := c.PrepareRequest(path, method, postBody, headerParams, queryParams)
+	r, err := c.prepareRequest(path, method, postBody, headerParams, queryParams)
 	if err != nil {
 		apiClientLogger.Error(err)
 		return nil, nil, err
 	}
-	return c.DoApiRequest(r)
+	return c.doAPIRequest(r)
 }
 
-func (c *APIClient) PrepareRequest(
+func (c *APIClient) prepareRequest(
 	path string,
 	method string,
 	postBody []byte,
@@ -79,14 +81,14 @@ func (c *APIClient) PrepareRequest(
 	queryParams url.Values) (localVarRequest *http.Request, err error) {
 
 	// Setup path and query parameters
-	parsedUrl, err := url.Parse(c.Cfg.Host + "/" + path)
+	parsedURL, err := url.Parse(c.Cfg.Host + "/" + path)
 	if err != nil {
 		apiClientLogger.Error(err)
 		return nil, err
 	}
 
 	// Adding Query Param
-	query := parsedUrl.Query()
+	query := parsedURL.Query()
 	for k, v := range queryParams {
 		for _, iv := range v {
 			query.Add(k, iv)
@@ -94,7 +96,7 @@ func (c *APIClient) PrepareRequest(
 	}
 
 	// Encode the parameters.
-	parsedUrl.RawQuery = query.Encode()
+	parsedURL.RawQuery = query.Encode()
 
 	// Detect postBody type and make request.
 	if postBody != nil {
@@ -106,9 +108,9 @@ func (c *APIClient) PrepareRequest(
 			contentType = "application/json; charset=utf-8"
 			headerParams["Content-Type"] = contentType
 		}
-		localVarRequest, err = http.NewRequest(method, parsedUrl.String(), bytes.NewBuffer(postBody))
+		localVarRequest, _ = http.NewRequest(method, parsedURL.String(), bytes.NewBuffer(postBody))
 	} else {
-		localVarRequest, err = http.NewRequest(method, parsedUrl.String(), nil)
+		localVarRequest, _ = http.NewRequest(method, parsedURL.String(), nil)
 	}
 
 	// Add header parameters, if any
@@ -122,7 +124,7 @@ func (c *APIClient) PrepareRequest(
 
 	// Override request host, if applicable
 	if c.Cfg.Host != "" {
-		localVarRequest.Host = parsedUrl.Host
+		localVarRequest.Host = parsedURL.Host
 	}
 
 	if c.Cfg.BasicAuth.UserName != "" && c.Cfg.BasicAuth.Password != "" {
@@ -149,7 +151,8 @@ func basicAuth(username, password string) string {
 func (c *APIClient) addCustomCACert() {
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
-		RootCAs: appConfig.AppConfig.ExtraCACert,
+		MinVersion: tls.VersionTLS12,
+		RootCAs:    appConfig.AppConfig.ExtraCACert,
 	}
 	tlsConfig.BuildNameToCertificate()
 	transport := &http.Transport{TLSClientConfig: tlsConfig}

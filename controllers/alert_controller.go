@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	config "github.com/aberestyak/elasticsearch-security-operator/config"
 	alerts "github.com/aberestyak/elasticsearch-security-operator/internal/elasticsearch/alerts"
@@ -50,6 +51,7 @@ type AlertReconciler struct {
 //+kubebuilder:rbac:groups=security.rshbdev.ru,resources=alerts/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=security.rshbdev.ru,resources=alerts/finalizers,verbs=update
 
+// Reconcile main reconcile loop
 func (r *AlertReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	desiredAlert := &securityv1alpha1.Alert{}
 	var err = r.Get(ctx, req.NamespacedName, desiredAlert)
@@ -106,17 +108,12 @@ func (r *AlertReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 	// New object created
 	if desiredAlert.Status.Monitor.ID == "" {
-		alertID, responseResult, responseBody, err := MakeAPIRequest("POST", config.AppConfig.ElasticsearchAlertApiPath, jsonAlert)
+		alertID, responseResult, responseBody, err := MakeAPIRequest("POST", config.AppConfig.ElasticsearchAlertAPIPath, jsonAlert)
 		if err != nil {
 			alertControllerLogger.Errorf("Error when creating new alert: %v", err.Error())
 			return ctrl.Result{}, err
 		}
-		SetAlertStatus(desiredAlert, responseResult, responseBody, alertID)
-
-		// Update status
-		r.Client.Status().Update(ctx, desiredAlert)
-		if err != nil {
-			alertControllerLogger.Errorf("Error when setting status: %v", err.Error())
+		if err := SetAlertStatus(r, desiredAlert, responseResult, responseBody, alertID); err != nil {
 			return ctrl.Result{}, err
 		}
 		alertControllerLogger.Infof("Created new alert: %v. Status: %v", desiredAlert.Name, desiredAlert.Status.Monitor.Status)
@@ -125,16 +122,12 @@ func (r *AlertReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	} else {
 		// Don't update new and deleted alerts
 		if desiredAlert.Generation > 1 && !isdesiredAlertToBeDeleted {
-			alertID, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchAlertApiPath+"/"+desiredAlert.Status.Monitor.ID, jsonAlert)
+			alertID, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchAlertAPIPath+"/"+desiredAlert.Status.Monitor.ID, jsonAlert)
 			if err != nil {
 				alertControllerLogger.Errorf("Error when updating alert: %v", err.Error())
 				return ctrl.Result{}, err
 			}
-			SetAlertStatus(desiredAlert, responseResult, responseBody, alertID)
-			// Update status
-			r.Client.Status().Update(ctx, desiredAlert)
-			if err != nil {
-				alertControllerLogger.Errorf("Error when setting status: %v", err.Error())
+			if err := SetAlertStatus(r, desiredAlert, responseResult, responseBody, alertID); err != nil {
 				return ctrl.Result{}, err
 			}
 			alertControllerLogger.Infof("Updated alert: %v. Status: %v", desiredAlert.Name, desiredAlert.Status.Monitor.Status)
@@ -143,7 +136,7 @@ func (r *AlertReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
-// MapuserAPIObject - map CRD model to API
+// MapAlertAPIObject - map CRD model to API
 func MapAlertAPIObject(alert *securityv1alpha1.Alert) (*alerts.AlertAPISpec, error) {
 	var alertAPI alerts.AlertAPISpec
 	buf, _ := json.Marshal(alert.Spec)
@@ -153,7 +146,8 @@ func MapAlertAPIObject(alert *securityv1alpha1.Alert) (*alerts.AlertAPISpec, err
 	return &alertAPI, nil
 }
 
-func SetAlertStatus(alert *securityv1alpha1.Alert, responseResult string, responseBody []byte, alertID string) {
+// SetAlertStatus set status
+func SetAlertStatus(r *AlertReconciler, alert *securityv1alpha1.Alert, responseResult string, responseBody []byte, alertID string) error {
 	alert.Status.Monitor = securityv1alpha1.StatusMonitor{
 		Name:   alert.Name,
 		ID:     alertID,
@@ -161,11 +155,14 @@ func SetAlertStatus(alert *securityv1alpha1.Alert, responseResult string, respon
 		Error: func(response string, responseBody []byte) string {
 			if response == "Error" {
 				return string(responseBody)
-			} else {
-				return ""
 			}
+			return ""
 		}(responseResult, responseBody),
 	}
+	if err := r.Client.Status().Update(context.TODO(), alert); err != nil {
+		return errors.New("Error when updating alert status: " + err.Error())
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -175,10 +172,11 @@ func (r *AlertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// FinalizeAlert delete alert
 func (r *AlertReconciler) FinalizeAlert(alert *securityv1alpha1.Alert) error {
 	if alert.Status.Monitor.ID != "" {
 		jsonAlert, _ := json.Marshal(alert.Spec)
-		_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchAlertApiPath+"/"+alert.Status.Monitor.ID, jsonAlert)
+		_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchAlertAPIPath+"/"+alert.Status.Monitor.ID, jsonAlert)
 		if err != nil {
 			alertControllerLogger.Errorf("Error when finalyzing alert: %v", err.Error())
 			return err

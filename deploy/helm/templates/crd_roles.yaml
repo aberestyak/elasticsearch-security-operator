@@ -49,6 +49,7 @@ spec:
                 type: array
               index_permissions:
                 items:
+                  description: IndexPermissions defines permissions to specified indices
                   properties:
                     allowed_actions:
                       items:
@@ -74,6 +75,8 @@ spec:
                   type: object
                 type: array
               roleMappings:
+                description: RoleMappings defines mapping between role and backed
+                  role/internal users
                 properties:
                   backend_roles:
                     items:
@@ -88,6 +91,8 @@ spec:
                 type: object
               tenant_permissions:
                 items:
+                  description: TenantPermissions defines permissions to specified
+                    tenants
                   properties:
                     allowed_actions:
                       items:
