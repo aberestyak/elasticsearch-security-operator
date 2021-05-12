@@ -2,17 +2,37 @@
 
 This operator provides full lifecycle of Elasticsearch users,roles,rolemapping and alerts.
 
-Mount config file to `/config.yaml` with following parameters:
+## Congiguration
 
-| Key                  | Value                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `endpoint`           | Elasticsearch endpoint                                                             |
-| `alertAPIPath`       | Path to alerts api endpoint (for example `_opendistro/_alerting/monitors`)         |
-| `roleAPIPath`        | Path to roles api endpoint (for example `_opendistro/_security/api/roles`)         |
-| `usersAPIPath`       | Path to users api endpoint (for example `_opendistro/_security/api/internalusers`)         |
-| `roleMappingAPIPath` | Path to role mappings api endpoint (for example `_opendistro/_security/api/rolesmapping`) |
-| `username`           | User with appropriate permissions                                                  |
-| `password`           | User password                                                                      |
+You can pass configuration with environment variables or file with following parameters:
+
+| Key                  | Environment variable                 | Value                                                                                     |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `endpoint`           | `ELASTICSEARCH_ENDPOINT`             | Elasticsearch endpoint                                                                    |
+| `alertAPIPath`       | `ELASTICSEARCH_ALERT_API_PATH`       | Path to alerts api endpoint (for example `_opendistro/_alerting/monitors`)                |
+| `roleAPIPath`        | `ELASTICSEARCH_ROLE_API_PATH`        | Path to roles api endpoint (for example `_opendistro/_security/api/roles`)                |
+| `usersAPIPath`       | `ELASTICSEARCH_USER_API_PATH`        | Path to users api endpoint (for example `_opendistro/_security/api/internalusers`)        |
+| `roleMappingAPIPath` | `ELASTICSEARCH_ROLEMAPPING_API_PATH` | Path to role mappings api endpoint (for example `_opendistro/_security/api/rolesmapping`) |
+| `extraCACertFile`    | `EXTRA_CA_CERT_FILE`                 | Path to file with custom CA certificate(s)                                                |
+| `username`           | `ELASTICSEARCH_USERNAME`             | User with appropriate permissions                                                         |
+| `password`           | `ELASTICSEARCH_PASSWORD`             | User password                                                                             |
+
+
+
+## Build
+
+### Requirements
+
+* [gosec](https://github.com/securego/gosec)
+* golint
+* [golangci-lint](https://github.com/golangci/golangci-lint)
+* Installed [envtest](https://book.kubebuilder.io/reference/envtest.html) binaries
+
+Export `VERSION` variable and execute
+
+```bash
+make docker-build
+```
 
 ## Deploy
 
@@ -23,3 +43,5 @@ helm -n elasticsearch-security-operator upgrade -i elasticsearch-security-operat
 Samples of custom resources can be found in `config/samples`
 
 ## TODO:
+
+- [ ] Refactor alert controller
