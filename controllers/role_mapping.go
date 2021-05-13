@@ -7,14 +7,9 @@ import (
 
 	"github.com/aberestyak/elasticsearch-security-operator/api/v1alpha1"
 	"github.com/aberestyak/elasticsearch-security-operator/config"
+	rolemappings "github.com/aberestyak/elasticsearch-security-operator/internal/elasticsearch/rolemappings"
 	log "github.com/sirupsen/logrus"
 )
-
-// RoleMappingAPISpec defines roleMapping API spec
-type RoleMappingAPISpec struct {
-	Users        []string `json:"users,omitempty"`
-	BackendRoles []string `json:"backend_roles"`
-}
 
 var roleMappingLogger = log.WithFields(log.Fields{
 	"component": "RoleMapping",
@@ -26,8 +21,8 @@ func MakeRoleMapping(role *v1alpha1.Role) error {
 	if err != nil {
 		return err
 	}
-	var apiRoleMappingObject RoleMappingAPISpec
-	apiRoleMappingObject.MapAPIRoleMappingObject(role)
+
+	apiRoleMappingObject := MapAPIRoleMappingObject(role)
 	apiRoleMappingJSON, _ := json.Marshal(apiRoleMappingObject)
 
 	if !roleMappingExists {
@@ -37,8 +32,8 @@ func MakeRoleMapping(role *v1alpha1.Role) error {
 		}
 		roleMappingLogger.Infof("Created roleMapping: %v.", role.Name)
 	} else {
-		// Update existing if need so
-		existingRoleMapping := make(map[string]RoleMappingAPISpec, 1)
+		// Update existing if need
+		existingRoleMapping := make(map[string]rolemappings.RoleMappingAPISpec, 1)
 		if err := json.Unmarshal(existingRoleMappingSpec, &existingRoleMapping); err != nil {
 			return err
 		}
@@ -53,13 +48,14 @@ func MakeRoleMapping(role *v1alpha1.Role) error {
 	return nil
 }
 
-// MapAPIRoleMappingObject - map passed role RoleMapping field to API
-func (r *RoleMappingAPISpec) MapAPIRoleMappingObject(role *v1alpha1.Role) {
-	r.BackendRoles = role.Spec.RoleMappings.BackendRoles
-	r.Users = role.Spec.RoleMappings.Users
+// MapAPIRoleMappingObject - map passed role's RoleMapping field to roleMappings API
+func MapAPIRoleMappingObject(role *v1alpha1.Role) *rolemappings.RoleMappingAPISpec {
+	return &rolemappings.RoleMappingAPISpec{
+		BackendRoles: role.Spec.RoleMappings.BackendRoles,
+		Users:        role.Spec.RoleMappings.Users}
 }
 
-// UpdateRoleMapping - make request to create or update RoleMapping for "parent" role or user
+// UpdateRoleMapping - make request to create or update RoleMapping for "parent" role
 func UpdateRoleMapping(name string, jsonRoleMapping []byte) error {
 	_, responseResult, responseBody, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchRoleMappingAPIPath+"/"+name, jsonRoleMapping)
 	if err != nil {

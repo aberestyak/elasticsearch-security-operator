@@ -32,7 +32,8 @@ type RoleSpec struct {
 
 // RoleMappings defines mapping between role and backed role/internal users
 type RoleMappings struct {
-	BackendRoles []string `json:"backend_roles"`
+	//+optional
+	BackendRoles []string `json:"backend_roles,omitempty"`
 	//+optional
 	Users []string `json:"users,omitempty"`
 }

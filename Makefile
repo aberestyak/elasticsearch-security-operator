@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.1.1
+VERSION ?= 0.1.2
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "preview,fast,stable")
@@ -62,9 +62,6 @@ help: ## Display this help.
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	cp config/crd/bases/security.rshbdev.ru_alerts.yaml deploy/helm/templates/crd_alerts.yaml
-	cp config/crd/bases/security.rshbdev.ru_roles.yaml deploy/helm/templates/crd_roles.yaml
-	cp config/crd/bases/security.rshbdev.ru_users.yaml deploy/helm/templates/crd_users.yaml
 
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
@@ -88,6 +85,12 @@ docker-build: test ## Build docker image with the manager.
 
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
+
+update-chart: ## Update helm chart
+	cp config/crd/bases/security.rshbdev.ru_alerts.yaml deploy/helm/templates/crd_alerts.yaml
+	cp config/crd/bases/security.rshbdev.ru_roles.yaml deploy/helm/templates/crd_roles.yaml
+	cp config/crd/bases/security.rshbdev.ru_users.yaml deploy/helm/templates/crd_users.yaml
+	sed -i 's/appVersion:.*/appVersion: ${VERSION}/g' deploy/helm/Chart.yaml
 
 ##@ Deployment
 

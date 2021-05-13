@@ -153,8 +153,7 @@ func (r *UserReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // FinalizeUser delete user
 func (r *UserReconciler) FinalizeUser(user *securityv1alpha1.User) error {
-	jsonUser, _ := json.Marshal(user.Spec)
-	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchUserAPIPath+"/"+user.Name, jsonUser)
+	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchUserAPIPath+"/"+user.Name, nil)
 	if err != nil {
 		userControllerLogger.Errorf("Error when finalyzing user: %v", err.Error())
 		return err

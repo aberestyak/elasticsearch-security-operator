@@ -3,4 +3,4 @@ kind: User
 metadata:
   name: user-sample-test
 spec:
-  hash: "1asda23123123"
+  hash: "$2a$10$dibEap3rC0duRfO9QTyOauo97US8aRj.m/Og4zanINhIDLEzGbO4O"

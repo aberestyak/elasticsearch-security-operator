@@ -24,7 +24,7 @@ var (
 		},
 	}
 	apiClientWrapperLogger = log.WithFields(log.Fields{
-		"component": "apiClientWrapper",
+		"component": "ApiClientWrapper",
 	})
 )
 
@@ -54,7 +54,7 @@ func GetResponseStatus(response *http.Response) string {
 func GetResponseObjectID(responseBody []byte) string {
 	var result map[string]string
 	if err := json.Unmarshal(responseBody, &result); err != nil {
-		apiClientWrapperLogger.Debugf("Error when unmarshaling http response body: %v", err)
+		apiClientWrapperLogger.Tracef("Can't unmarshal response body: %v", err)
 	}
 	return result["_id"]
 }

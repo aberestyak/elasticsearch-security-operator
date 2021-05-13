@@ -86,8 +86,6 @@ spec:
                     items:
                       type: string
                     type: array
-                required:
-                - backend_roles
                 type: object
               tenant_permissions:
                 items:

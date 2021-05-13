@@ -10,7 +10,7 @@ spec:
   - index_patterns:
     - movies*
     dls: |-
-      {"bool": {"must": {"match": {"kubernetes.cluster_name": "devstbl"}}}}
+      {"bool": {"must": {"match": {"kubernetes.cluster_name": "teststbl"}}}}
     fls: []
     masked_fields: []
     allowed_actions:
@@ -23,3 +23,5 @@ spec:
   roleMappings:
     backend_roles:
       - test1
+    users:
+      - sample-user

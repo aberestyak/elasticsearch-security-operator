@@ -185,8 +185,7 @@ func (r *RoleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // FinalizeRole delete role
 func (r *RoleReconciler) FinalizeRole(role *securityv1alpha1.Role) error {
-	jsonRole, _ := json.Marshal(role.Spec)
-	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchRoleAPIPath+"/"+role.Name, jsonRole)
+	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchRoleAPIPath+"/"+role.Name, nil)
 	if err != nil {
 		roleControllerLogger.Errorf("Error when finalyzing role: %v", err.Error())
 		return err

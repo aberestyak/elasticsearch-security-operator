@@ -51,7 +51,7 @@ spec:
       - "business-*"
   triggers:
   - name: test
-    severity: "2"
+    severity: "1"
     condition:
       script:
         source: "ctx.results[0].hits.total.value > 10000"

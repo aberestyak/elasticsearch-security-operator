@@ -175,8 +175,7 @@ func (r *AlertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // FinalizeAlert delete alert
 func (r *AlertReconciler) FinalizeAlert(alert *securityv1alpha1.Alert) error {
 	if alert.Status.Monitor.ID != "" {
-		jsonAlert, _ := json.Marshal(alert.Spec)
-		_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchAlertAPIPath+"/"+alert.Status.Monitor.ID, jsonAlert)
+		_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchAlertAPIPath+"/"+alert.Status.Monitor.ID, nil)
 		if err != nil {
 			alertControllerLogger.Errorf("Error when finalyzing alert: %v", err.Error())
 			return err
