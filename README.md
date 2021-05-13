@@ -1,6 +1,6 @@
 
 # Elasticsearch-security
-[![Go Report Card](https://goreportcard.com/badge/github.com/aberestyak/elasticsearch-security-operator)](https://goreportcard.com/report/github.com/aberestyak/elasticsearch-security-operator) ![Go Report Card](https://img.shields.io/docker/image-size/berestyak/elasticsearch-security-operator/0.1.2)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aberestyak/elasticsearch-security-operator)](https://goreportcard.com/report/github.com/aberestyak/elasticsearch-security-operator) [![Go Report Card](https://img.shields.io/docker/image-size/berestyak/elasticsearch-security-operator/0.1.2)](https://hub.docker.com/repository/docker/berestyak/elasticsearch-security-operator)
 
 This operator provides full lifecycle of Elasticsearch users,roles,rolemapping and alerts.
 
