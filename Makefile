@@ -85,6 +85,7 @@ docker-build: test ## Build docker image with the manager.
 
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
+	sed -i 's#(https://img.shields.io/docker/image-size/berestyak/elasticsearch-security-operator/.*)#(https://img.shields.io/docker/image-size/berestyak/elasticsearch-security-operator/${VERSION})#g' README.md
 
 update-chart: ## Update helm chart
 	cp config/crd/bases/security.rshbdev.ru_alerts.yaml deploy/helm/templates/crd_alerts.yaml
