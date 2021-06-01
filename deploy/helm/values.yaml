@@ -35,6 +35,8 @@ env:
   #   value: "_opendistro/_security/api/roles"
   # - name: ELASTICSEARCH_USER_API_PATH
   #   value: "_opendistro/_security/api/internalusers"
+  # - name: ELASTICSEARCH_TENANT_API_PATH
+  #   value: "_opendistro/_security/api/tenants"
   # - name: EXTRA_CA_CERT_FILE
   #   value: "/usr/share/cacert/CA.pem"
   # - name: ELASTICSEARCH_ROLEMAPPING_API_PATH
@@ -46,6 +48,7 @@ config:
   alertAPIPath: "_opendistro/_alerting/monitors"
   roleAPIPath: "_opendistro/_security/api/roles"
   userAPIPath: "_opendistro/_security/api/internalusers"
+  tenantAPIPath: "_opendistro/_security/api/tenants"
   roleMappingAPIPath: "_opendistro/_security/api/rolesmapping"
   # extraCACertFile: "/usr/share/cacert/CA.pem"
   username: "admin"
