@@ -15,8 +15,8 @@ var roleMappingLogger = log.WithFields(log.Fields{
 	"component": "RoleMapping",
 })
 
-// MakeRoleMapping - create/update RoleMapping object, based on passed role
-func MakeRoleMapping(role *v1alpha1.Role) error {
+// CreateRoleMapping - create/update RoleMapping object, based on passed role
+func CreateRoleMapping(role *v1alpha1.Role) error {
 	roleMappingExists, existingRoleMappingSpec, err := GetExistingObject(config.AppConfig.ElasticsearchRoleMappingAPIPath, role.Name)
 	if err != nil {
 		return err

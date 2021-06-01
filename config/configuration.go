@@ -15,6 +15,7 @@ import (
 type Config struct {
 	ElasticsearchEndpoint           string         `mapstructure:"endpoint"`
 	ElasticsearchAlertAPIPath       string         `mapstructure:"alertAPIPath"`
+	ElasticsearchTenantAPIPath      string         `mapstructure:"tenantAPIPath"`
 	ElasticsearchRoleAPIPath        string         `mapstructure:"roleAPIPath"`
 	ElasticsearchUserAPIPath        string         `mapstructure:"userAPIPath"`
 	ElasticsearchRoleMappingAPIPath string         `mapstructure:"roleMappingAPIPath"`
@@ -29,6 +30,7 @@ const (
 	elasticsearchEndpoint           = "ELASTICSEARCH_ENDPOINT"
 	elasticsearchAlertAPIPath       = "ELASTICSEARCH_ALERT_API_PATH"
 	elasticsearchRoleAPIPath        = "ELASTICSEARCH_ROLE_API_PATH"
+	elasticsearchTenantAPIPath      = "ELASTICSEARCH_TENANT_API_PATH"
 	elasticsearchUserAPIPath        = "ELASTICSEARCH_USER_API_PATH"
 	elasticsearchRoleMappingAPIPath = "ELASTICSEARCH_ROLEMAPPING_API_PATH"
 	extraCACertFile                 = "EXTRA_CA_CERT_FILE"
@@ -53,6 +55,7 @@ func loadConfig() *Config {
 		viper.SetDefault(elasticsearchAlertAPIPath, "_opendistro/_alerting/monitors")
 		viper.SetDefault(elasticsearchRoleAPIPath, "_opendistro/_security/api/roles")
 		viper.SetDefault(elasticsearchUserAPIPath, "_opendistro/_security/api/internalusers")
+		viper.SetDefault(conf.ElasticsearchTenantAPIPath, "_opendistro/_security/api/tenants")
 		viper.SetDefault(elasticsearchRoleMappingAPIPath, "_opendistro/_security/api/rolesmapping")
 		viper.SetDefault(extraCACertFile, "")
 
@@ -60,6 +63,7 @@ func loadConfig() *Config {
 		conf.ElasticsearchAlertAPIPath = viper.GetString(elasticsearchAlertAPIPath)
 		conf.ElasticsearchRoleAPIPath = viper.GetString(elasticsearchRoleAPIPath)
 		conf.ElasticsearchUserAPIPath = viper.GetString(elasticsearchUserAPIPath)
+		conf.ElasticsearchTenantAPIPath = viper.GetString(elasticsearchTenantAPIPath)
 		conf.ElasticsearchRoleMappingAPIPath = viper.GetString(elasticsearchRoleMappingAPIPath)
 		conf.ExtraCACertFile = viper.GetString(extraCACertFile)
 		conf.ElasticsearchUsername = viper.GetString(elasticsearchUsername)

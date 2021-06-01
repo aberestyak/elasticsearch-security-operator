@@ -127,11 +127,18 @@ func (r *RoleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			roleControllerLogger.Infof("Updated role: %v. Status: %v", desiredRole.Name, desiredRole.Status.Status)
 		}
 		// Create or update roleMapping, no matter is this create or update operation and update role status
-		if err := MakeRoleMapping(desiredRole); err != nil {
+		if err := CreateRoleMapping(desiredRole); err != nil {
 			if err := SetRoleStatus(r, desiredRole, "Error", []byte(err.Error())); err != nil {
 				roleControllerLogger.Errorf("Error when setting role status: %v", err.Error())
 			}
 		}
+		// Create tenant, no matter is this create or update operation and update role status
+		if err := CreateTenant(desiredRole); err != nil {
+			if err := SetRoleStatus(r, desiredRole, "Error", []byte(err.Error())); err != nil {
+				roleControllerLogger.Errorf("Error when setting role status: %v", err.Error())
+			}
+		}
+
 	}
 	return ctrl.Result{}, nil
 }
@@ -176,6 +183,39 @@ func CreateOrUpdateRole(r *RoleReconciler, role *securityv1alpha1.Role, jsonRole
 	return nil
 }
 
+// CreateTenant - make PUT request to create or update Tenant
+func CreateTenant(role *securityv1alpha1.Role) error {
+	// Must provide description
+	description := map[string]string{"description": role.Name}
+	descriptionJSON, _ := json.Marshal(description)
+	for _, tenantPattern := range role.Spec.TenantPermissions {
+		for _, tenant := range tenantPattern.TenantPatterns {
+			// Don't update default global tenant
+			if tenant != "global_tenant" {
+				_, _, _, err := MakeAPIRequest("PUT", config.AppConfig.ElasticsearchTenantAPIPath+"/"+tenant, descriptionJSON)
+				if err != nil {
+					return errors.New("Error when updating tenant: " + err.Error())
+				}
+				roleControllerLogger.Infof("Updated tenant: %v", tenant)
+			}
+		}
+	}
+	return nil
+}
+
+// DeleteTenant - make DELETE request to delete tenant
+func DeleteTenant(tenant string) error {
+	// Don't delete default global tenant
+	if tenant != "global_tenant" {
+		_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchTenantAPIPath+"/"+tenant, nil)
+		if err != nil {
+			roleControllerLogger.Errorf("Error when deleting tenant: %v", err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *RoleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -185,6 +225,16 @@ func (r *RoleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // FinalizeRole delete role
 func (r *RoleReconciler) FinalizeRole(role *securityv1alpha1.Role) error {
+	for _, tenantPattern := range role.Spec.TenantPermissions {
+		for _, tenant := range tenantPattern.TenantPatterns {
+			if err := DeleteTenant(tenant); err != nil {
+				roleControllerLogger.Errorf("Error when finalyzing role: %v", err.Error())
+				return err
+			}
+			roleControllerLogger.Infof("Updated tenant: %v", tenant)
+		}
+	}
+
 	_, _, _, err := MakeAPIRequest("DELETE", config.AppConfig.ElasticsearchRoleAPIPath+"/"+role.Name, nil)
 	if err != nil {
 		roleControllerLogger.Errorf("Error when finalyzing role: %v", err.Error())
